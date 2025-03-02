@@ -20,6 +20,15 @@ router.get('/', async (req, res) => {
         res.status(500).send('Error fetching blogs');
     }
 });
+// Route API: Lấy danh sách blog dưới dạng JSON
+router.get('/admin/api/blogs', async (req, res) => {
+    try {
+        const blogs = await Blog.find();
+        res.json(blogs);
+    } catch (error) {
+        res.status(500).json({ error: 'Lỗi khi lấy danh sách blog.' });
+    }
+});
 
 
 // Route: Thêm sản phẩm mới (chỉ để thử nghiệm)

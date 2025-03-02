@@ -14,6 +14,14 @@ router.get('/', async (req, res) => {
     res.status(500).send('Error fetching products');
   }
 });
+router.get('/admin/api/products', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Lỗi khi lấy danh sách sản phẩm.' });
+  }
+});
 
 router.get('/single_product/:id', getProductDetail);
 

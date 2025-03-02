@@ -656,6 +656,7 @@ define-data-property@^1.1.4:
     bootstrap "^5.3.3"
     cors "^2.8.5"
     demo "file:"
+    dotenv "^16.4.7"
     ejs "^3.1.10"
     express "^4.21.2"
     express-session "^1.18.1"
@@ -953,6 +954,11 @@ fs-extra@^11.0.0:
     graceful-fs "^4.2.0"
     jsonfile "^6.0.1"
     universalify "^2.0.0"
+
+fsevents@~2.3.2:
+  version "2.3.3"
+  resolved "https://registry.npmmirror.com/fsevents/-/fsevents-2.3.3.tgz"
+  integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
 
 function-bind@^1.1.2:
   version "1.1.2"
