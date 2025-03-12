@@ -96,6 +96,16 @@ import Product from '../models/product.mjs';
 
 const router = express.Router();
 
+// Hàm tạo baseUrl dựa trên môi trường
+const getBaseUrl = (req) => {
+  // Kiểm tra nếu đang chạy trên Render.com (dùng https)
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://' + req.get('host');
+  }
+  // Nếu chạy trên localhost, dùng giao thức từ request
+  return req.protocol + '://' + req.get('host');
+};
+
 // Lấy giỏ hàng (giao diện HTML)
 router.get('/cart', async (req, res) => {
   try {
@@ -105,7 +115,7 @@ router.get('/cart', async (req, res) => {
     const cart = await Cart.findOne({ userId }).populate('items.productId');
     console.log('Cart found in /cart:', cart);
 
-    const baseUrl = req.protocol + '://' + req.get('host');
+    const baseUrl = getBaseUrl(req);
     let subtotal = 0;
     let cartItems = [];
     if (cart && cart.items) {
@@ -121,12 +131,9 @@ router.get('/cart', async (req, res) => {
             _id: item.productId._id,
             name: item.productId.name,
             price: item.productId.price,
-            // image: item.productId.image.startsWith('http')
-            //     ? item.productId.image
-            //     : `${baseUrl}/${item.productId.image}`,
-            image: item.productId.image.startsWith('https')
-            ? item.productId.image
-            : `${baseUrl}/images/${item.productId.image.split('/').pop()}`,
+            image: item.productId.image.match(/^https?:\/\//) // Kiểm tra cả http và https
+                ? item.productId.image
+                : `${baseUrl}/images/${item.productId.image.split('/').pop()}`,
             category: item.productId.category || 'N/A',
           },
           quantity: item.quantity,
@@ -155,7 +162,7 @@ router.get('/api/cart', async (req, res) => {
       return res.status(200).json({ items: [], subtotal: 0 });
     }
 
-    const baseUrl = req.protocol + '://' + req.get('host');
+    const baseUrl = getBaseUrl(req);
     let subtotal = 0;
     const cartItems = cart.items.map(item => {
       if (!item.productId) {
@@ -169,9 +176,9 @@ router.get('/api/cart', async (req, res) => {
         name: item.productId.name,
         price: item.productId.price,
         quantity: item.quantity,
-        image: item.productId.image.startsWith('http')
+        image: item.productId.image.match(/^https?:\/\//) // Kiểm tra cả http và https
             ? item.productId.image
-            : `${baseUrl}/${item.productId.image}`,
+            : `${baseUrl}/images/${item.productId.image.split('/').pop()}`,
         total: itemTotal,
       };
     }).filter(item => item !== null);
@@ -243,7 +250,6 @@ router.post('/update-quantity', async (req, res) => {
       cart.items[itemIndex].quantity = quantity;
       await cart.save();
 
-      // Tính lại subtotal sau khi cập nhật
       const updatedCart = await Cart.findOne({ userId }).populate('items.productId');
       let subtotal = 0;
       const cartItems = updatedCart.items.map(item => {
@@ -288,7 +294,7 @@ router.post('/remove-from-cart', async (req, res) => {
       return res.status(404).json({ message: 'Cart not found' });
     }
 
-    const baseUrl = req.protocol + '://' + req.get('host');
+    const baseUrl = getBaseUrl(req);
     let subtotal = 0;
     const cartItems = cart.items.map(item => {
       const itemTotal = item.productId.price * item.quantity;
@@ -298,9 +304,9 @@ router.post('/remove-from-cart', async (req, res) => {
         name: item.productId.name,
         price: item.productId.price,
         quantity: item.quantity,
-        image: item.productId.image.startsWith('http')
+        image: item.productId.image.match(/^https?:\/\//)
             ? item.productId.image
-            : `${baseUrl}/${item.productId.image}`,
+            : `${baseUrl}/images/${item.productId.image.split('/').pop()}`,
         total: itemTotal,
       };
     });
