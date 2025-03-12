@@ -18,13 +18,13 @@
                 <table class="table">
                     <thead class="thead-primary">
                         <tr>
-                            <th>&nbsp;</th>
-                            <th>&nbsp;</th>
+                            <th> </th>
+                            <th> </th>
                             <th>Product</th>
                             <th>Price</th>
                             <th>Quantity</th>
                             <th>Total</th>
-                            <th>&nbsp;</th>
+                            <th> </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,28 +39,28 @@
                                         </label>
                                     </td>
                                     <td>
-                                        <% if (item.productId && item.productId.image) { %>
+                                        <% if (item.productId.image) { %>
                                             <div class="img" style="background-image: url('<%= item.productId.image %>');"></div>
                                         <% } else { %>
-                                            <div class="img" style="background-image: url('/path/to/default-image.jpg');"></div>
+                                            <div class="img" style="background-image: url('/images/default-image.jpg');"></div>
                                         <% } %>
                                     </td>
                                     <td>
                                         <div class="email">
-                                            <span><%= item.productId ? item.productId.name : 'Không có sản phẩm' %></span>
-                                            <span><%= item.productId ? item.productId.category : 'N/A' %></span>
+                                            <span><%= item.productId.name || 'Không có sản phẩm' %></span>
+                                            <span><%= item.productId.category || 'N/A' %></span>
                                         </div>
                                     </td>
                                     <td>
-                                        $<%= item.productId ? item.productId.price.toFixed(2) : '0.00' %>
+                                        $<%= item.productId.price.toFixed(2) %>
                                     </td>
                                     <td class="quantity">
                                         <div class="input-group">
-                                            <input type="number" name="quantity" class="quantity form-control input-number" value="<%= item.quantity %>" min="1">
+                                            <input type="number" name="quantity" class="quantity form-control input-number" value="<%= item.quantity %>" min="1" data-product-id="<%= item.productId._id %>">
                                         </div>
                                     </td>
                                     <td class="total-price">
-                                        $<%= item.productId ? (item.productId.price * item.quantity).toFixed(2) : '0.00' %>
+                                        $<%= item.total.toFixed(2) %>
                                     </td>
                                     <td>
                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -87,12 +87,12 @@
                         <tr>
                             <td colspan="5" class="text-right">Subtotal:</td>
                             <td class="total-price" id="subtotal">$<%= subtotal %></td>
-                            <td>&nbsp;</td>
+                            <td> </td>
                         </tr>
                         <tr>
                             <td colspan="5" class="text-right">Total:</td>
                             <td class="total-price" id="total">$<%= subtotal %></td>
-                            <td>&nbsp;</td>
+                            <td> </td>
                         </tr>
                     </tfoot>
                 </table>
@@ -139,6 +139,9 @@
 
                     // Cập nhật giao diện
                     row.remove();
+                    if ($('tr.alert').length === 0) {
+                        $('tbody').html('<tr><td colspan="7">Giỏ hàng trống</td></tr>');
+                    }
                     updateCartTotals(response.subtotal);
                 },
                 error: function (err) {
@@ -148,25 +151,39 @@
             });
         });
 
-        // Cập nhật tổng khi thay đổi số lượng (nếu cần)
+        // Khi thay đổi số lượng
         $('input[name="quantity"]').on('change', function () {
             const row = $(this).closest('tr');
-            const price = parseFloat(row.find('td:nth-child(4)').text().replace('$', ''));
+            const productId = $(this).data('product-id');
             const quantity = parseInt($(this).val());
-            row.find('.total-price').text('$' + (price * quantity).toFixed(2));
+            if (quantity < 1) {
+                $(this).val(1);
+                return;
+            }
 
-            // Tính tổng tiền mới từ frontend (nếu không gọi lại server)
-            let subtotal = 0;
-            $('tr.alert').each(function () {
-                const rowPrice = parseFloat($(this).find('td:nth-child(4)').text().replace('$', ''));
-                const rowQuantity = parseInt($(this).find('input[name="quantity"]').val());
-                subtotal += rowPrice * rowQuantity;
+            // Gọi API cập nhật số lượng
+            $.ajax({
+                url: '/update-quantity',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ productId, quantity }),
+                success: function (response) {
+                    if (response.message) {
+                        alert(response.message);
+                    }
+
+                    // Cập nhật tổng giá của sản phẩm
+                    row.find('.total-price').text('$' + (response.items.find(item => item.productId === productId).total).toFixed(2));
+
+                    // Cập nhật tổng giỏ hàng
+                    updateCartTotals(response.subtotal);
+                },
+                error: function (err) {
+                    console.error('Error:', err);
+                    alert('Không thể cập nhật số lượng. Vui lòng thử lại.');
+                },
             });
-
-            updateCartTotals(subtotal.toFixed(2));
         });
-
-            
     });
 </script>
 
@@ -201,6 +218,13 @@
 
     .btn-checkout:hover {
         background-color: #0056b3;
+    }
+
+    .img {
+        width: 50px;
+        height: 50px;
+        background-size: cover;
+        background-position: center;
     }
 </style>
 <%- include('layouts/footer'); %>
