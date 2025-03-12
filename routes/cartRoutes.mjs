@@ -124,7 +124,7 @@ router.get('/cart', async (req, res) => {
             // image: item.productId.image.startsWith('http')
             //     ? item.productId.image
             //     : `${baseUrl}/${item.productId.image}`,
-            image: item.productId.image.startsWith('http')
+            image: item.productId.image.startsWith('https')
             ? item.productId.image
             : `${baseUrl}/images/${item.productId.image.split('/').pop()}`,
             category: item.productId.category || 'N/A',
