@@ -121,9 +121,12 @@ router.get('/cart', async (req, res) => {
             _id: item.productId._id,
             name: item.productId.name,
             price: item.productId.price,
+            // image: item.productId.image.startsWith('http')
+            //     ? item.productId.image
+            //     : `${baseUrl}/${item.productId.image}`,
             image: item.productId.image.startsWith('http')
-                ? item.productId.image
-                : `${baseUrl}/${item.productId.image}`,
+            ? item.productId.image
+            : `${baseUrl}/images/${item.productId.image.split('/').pop()}`,
             category: item.productId.category || 'N/A',
           },
           quantity: item.quantity,
