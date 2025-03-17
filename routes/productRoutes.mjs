@@ -14,6 +14,7 @@ router.get('/', async (req, res) => {
     res.status(500).send('Error fetching products');
   }
 });
+
 router.get('/admin/api/products', async (req, res) => {
   try {
     const products = await Product.find();
@@ -25,6 +26,18 @@ router.get('/admin/api/products', async (req, res) => {
 
 router.get('/single_product/:id', getProductDetail);
 
+router.get('/product/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).send('Product not found');
+    }
+    res.render('single_product', { product });
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    res.status(500).send('Server error');
+  }
+});
 
 router.post('/add', async (req, res) => {
   try {
@@ -34,6 +47,20 @@ router.post('/add', async (req, res) => {
     res.redirect('/');
   } catch (error) {
     res.status(500).send('Error adding product');
+  }
+});
+
+// Endpoint cho autocomplete
+router.get('/product/autocomplete', async (req, res) => {
+  const term = req.query.term || '';
+  try {
+    const suggestions = await Product.find({ name: { $regex: term, $options: 'i' } })
+      .limit(10)
+      .select('name');
+    res.json(suggestions.map(product => product.name));
+  } catch (error) {
+    console.error('Error fetching autocomplete suggestions:', error);
+    res.status(500).json([]);
   }
 });
 

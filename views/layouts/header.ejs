@@ -45,17 +45,18 @@
                                     class="sr-only">Dribbble</i></span></a>
                         </p>
                     </div>
-                    <div class="reg" id="auth-buttons">
-                        <p class="mb-0"><a href="/re" class="mr-2">Sign Up</a> <a href="/login">Log In</a></p>
+                    <% if (user) { %>
+                    <div class="greeting" id="greeting-message">
+                        <p class="mb-0 d-flex align-items-center" id="greeting-text" style="color: white; font-weight:bold;">
+                          Hello <%= user.name %>!
+                          <a href="/logout" class="btn btn-danger ml-3">Log Out</a>
+                        </p>
                     </div>
-					<div class="greeting" id="greeting-message" style="display:none;">
-						<p class="mb-0 d-flex align-items-center" id="greeting-text" style="color: white; font-weight:bold;">
-						  Hello<span id="username"></span>!
-						  <button id="logout-btn" class="btn btn-danger ml-3" onclick="logout()">Log Out</button>
-						</p>
-					  </div>
-					  
-
+                    <% } else { %>
+                    <div class="reg" id="auth-buttons">
+                        <p class="mb-0"><a href="/signup" class="mr-2">Sign Up</a> <a href="/login">Log In</a></p>
+                    </div>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -84,44 +85,6 @@
     <nav class="navbar navbar-expand-lg navbar-dark ftco_navbar bg-dark ftco-navbar-light" id="ftco-navbar">
         <div class="container">
             <a class="navbar-brand" href="/">Liquor <span>store</span></a>
-            <div class="order-lg-last btn-group">
-                <a href="/cart" class="btn-cart dropdown-toggle dropdown-toggle-split" data-toggle="dropdown"
-                    aria-haspopup="true" aria-expanded="false">
-                    <span class="flaticon-shopping-bag"></span>
-                    <div class="d-flex justify-content-center align-items-center"><small>3</small></div>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right">
-                    <div class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="img" style="background-image: url(images/prod-1.jpg);"></div>
-                        <div class="text pl-3">
-                            <h4>Bacardi 151</h4>
-                            <p class="mb-0"><a href="#" class="price">$25.99</a><span class="quantity ml-3">Quantity:
-                                01</span></p>
-                        </div>
-                    </div>
-                    <div class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="img" style="background-image: url(images/prod-2.jpg);"></div>
-                        <div class="text pl-3">
-                            <h4>Jim Beam Kentucky Straight</h4>
-                            <p class="mb-0"><a href="#" class="price">$30.89</a><span class="quantity ml-3">Quantity:
-                                02</span></p>
-                        </div>
-                    </div>
-                    <div class="dropdown-item d-flex align-items-start" href="#">
-                        <div class="img" style="background-image: url(images/prod-3.jpg);"></div>
-                        <div class="text pl-3">
-                            <h4>Citadelle</h4>
-                            <p class="mb-0"><a href="#" class="price">$22.50</a><span class="quantity ml-3">Quantity:
-                                01</span></p>
-                        </div>
-                    </div>
-                    <a class="dropdown-item text-center btn-link d-block w-100" href="/cart">
-                        View All
-                        <span class="ion-ios-arrow-round-forward"></span>
-                    </a>
-                </div>
-            </div>
-
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#ftco-nav"
                 aria-controls="ftco-nav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="oi oi-menu"></span> Menu
@@ -131,18 +94,11 @@
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item active"><a href="/" class="nav-link">Home</a></li>
                     <li class="nav-item"><a href="/about" class="nav-link">About</a></li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="dropdown04" data-toggle="dropdown"
-                            aria-haspopup="true" aria-expanded="false">Products</a>
-                        <div class="dropdown-menu" aria-labelledby="dropdown04">
-                            <a class="dropdown-item" href="/product">Products</a>
-                            <!-- <a class="dropdown-item" href="/single_product">Single Product</a> -->
-                            <a class="dropdown-item" href="/cart">Cart</a>
-                            <a class="dropdown-item" href="/checkout">Checkout</a>
-                        </div>
-                    </li>
+                    <li class="nav-item"><a href="/product" class="nav-link">Products</a></li>
                     <li class="nav-item"><a href="/blog" class="nav-link">Blog</a></li>
                     <li class="nav-item"><a href="/contact" class="nav-link">Contact</a></li>
+                    <li class="nav-item"><a href="/history" class="nav-link">Order History</a></li>
+                    <li class="nav-item"><a href="/cart" class="nav-link">Cart</a></li>
                 </ul>
             </div>
         </div>
