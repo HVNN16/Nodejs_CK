@@ -1,33 +1,22 @@
 import express from 'express';
-// import { checkOutPage, getCheckoutDetail, createCheckout, updatePaymentStatus } from '../controllers/checkOutController.mjs';
-import { checkOutPage } from '../controllers/checkOutController.mjs';
-
+import { checkOutPage, createCheckout, getOrderHistory, getOrderDetail, cancelOrder } from '../controllers/checkOutController.mjs';
+import { isAuthenticated } from '../middlewares/auth.mjs';
 
 const router = express.Router();
 
 // Route for checkout page
-router.get('/checkout', checkOutPage);
+router.get('/checkout', isAuthenticated, checkOutPage);
 
-// // Route to get checkout details by ID
-// router.get('/:id', getCheckoutDetail);
+// Route to create a new checkout order
+router.post('/place-order', isAuthenticated, createCheckout);
 
-// // Route to create a new checkout order
-// router.post('/create', createCheckout);
+// Route to view order history
+router.get('/history', isAuthenticated, getOrderHistory);
 
-// // Route to update payment status of checkout order
-// router.put('/:id', updatePaymentStatus);
+// Route to view order detail
+router.get('/history/:id', isAuthenticated, getOrderDetail);
 
-// Route to delete checkout order
-router.delete('/:id', async (req, res) => {
-  try {
-    const checkout = await Checkout.findByIdAndDelete(req.params.id);
-    if (!checkout) {
-      return res.status(404).send('Checkout order not found');
-    }
-    res.send('Checkout order deleted');
-  } catch (error) {
-    res.status(500).send('Error deleting checkout order');
-  }
-});
+// Route to cancel an order
+router.post('/history/:id/cancel', isAuthenticated, cancelOrder);
 
 export default router;
