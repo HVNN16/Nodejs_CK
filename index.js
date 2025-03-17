@@ -15,9 +15,11 @@ import checkOutRouter from './routes/checkOutRoutes.mjs';
 import contactRouter from './routes/contactRoutes.mjs';
 import productRouter from './routes/productRoutes.mjs';
 import singleProductRouter from './routes/singleProductRoutes.mjs';
+import { isAuthenticated } from "./middlewares/auth.mjs";
+import { attachUser } from "./middlewares/auth.mjs";
 // Khởi tạo ứng dụng Express
 const app = express();
-const port = 3000;
+const port = 3001;
 
 app.use(cors());
 
@@ -78,6 +80,7 @@ app.set("view engine", "ejs");
 app.set("views", "./views");
 
 // Định nghĩa các route
+app.use(attachUser);
 app.use("/", rootRouter);
 // app.use("/users", userRouter);
 app.use("/api/v1", apiuserRouter);
@@ -93,20 +96,20 @@ app.use('/', checkOutRouter);
 // app.use('/', adminRouter);
 
 // Routes for managing users
-app.get("/admin/users",  isAdmin, AdminController.manageUsers);
-app.get("/admin/users/new",  isAdmin, AdminController.newUser);
-app.post("/admin/users",  isAdmin, AdminController.createUser);
-app.get("/admin/users/edit/:id",  isAdmin, AdminController.editUser);
-app.post("/admin/users/update/:id",  isAdmin, AdminController.updateUser);
-app.post("/admin/users/delete/:id",  isAdmin, AdminController.deleteUser);
+app.get("/admin/users", isAuthenticated,  isAdmin, AdminController.manageUsers);
+app.get("/admin/users/new", isAuthenticated, isAdmin, AdminController.newUser);
+app.post("/admin/users", isAuthenticated, isAdmin, AdminController.createUser);
+app.get("/admin/users/edit/:id", isAuthenticated, isAdmin, AdminController.editUser);
+app.post("/admin/users/update/:id", isAuthenticated, isAdmin, AdminController.updateUser);
+app.post("/admin/users/delete/:id", isAuthenticated, isAdmin, AdminController.deleteUser);
 
 // Routes for managing products
-app.get("/admin/products",  isAdmin, AdminController.manageProducts);
-app.get("/admin/products/new",  isAdmin, AdminController.newProduct);
-app.post("/admin/products/create",  isAdmin, AdminController.createProduct);
-app.get("/admin/products/edit/:id",  isAdmin, AdminController.editProduct);
-app.post("/admin/products/update/:id",  isAdmin, AdminController.updateProduct);
-app.post("/admin/products/delete/:id",  isAdmin, AdminController.deleteProduct);
+app.get("/admin/products", isAuthenticated, isAdmin, AdminController.manageProducts);
+app.get("/admin/products/new", isAuthenticated, isAdmin, AdminController.newProduct);
+app.post("/admin/products/create", isAuthenticated, isAdmin, AdminController.createProduct);
+app.get("/admin/products/edit/:id", isAuthenticated, isAdmin, AdminController.editProduct);
+app.post("/admin/products/update/:id", isAuthenticated, isAdmin, AdminController.updateProduct);
+app.post("/admin/products/delete/:id", isAuthenticated, isAdmin, AdminController.deleteProduct);
 
 
 

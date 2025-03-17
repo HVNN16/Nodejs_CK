@@ -23,6 +23,12 @@ const userScheme = new Schema({
     default: "User",
     enum: ["Admin", "User"],
   },
+  cart: [
+    {
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      quantity: Number,
+    },
+  ],
 });
 
 const User = userDBConnection.model("user", userScheme); 

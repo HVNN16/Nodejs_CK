@@ -87,20 +87,20 @@
                         <tr>
                             <td colspan="5" class="text-right">Subtotal:</td>
                             <td class="total-price" id="subtotal">$<%= subtotal %></td>
-                            <td> </td>
                         </tr>
                         <tr>
                             <td colspan="5" class="text-right">Total:</td>
                             <td class="total-price" id="total">$<%= subtotal %></td>
-                            <td> </td>
                         </tr>
                     </tfoot>
                 </table>
-                <div class="text-right">
-                    <button class="btn-checkout bg-black">
-                        <a href="/checkout" style="color: white; font-weight:bold">Proceed to Checkout</a>
-                    </button>
-                </div>
+                <% if (cart && cart.items.length > 0) { %>
+                    <div class="text-right">
+                        <button class="btn-checkout bg-black" id="checkout-btn">
+                            <a href="/checkout" style="color: white; font-weight:bold" id="checkout-link">Proceed to Checkout</a>
+                        </button>
+                    </div>
+                <% } %>
             </div>
         </div>
     </div>
@@ -115,18 +115,31 @@
 
 <script>
     $(document).ready(function () {
+        // Hàm kiểm tra và cập nhật trạng thái nút checkout
+        function updateCheckoutButton() {
+            const itemCount = $('tr.alert').length;
+            const $checkoutBtn = $('#checkout-btn');
+            if (itemCount === 0) {
+                $checkoutBtn.parent().hide();
+            } else {
+                $checkoutBtn.parent().show();
+            }
+        }
+
         // Hàm cập nhật tổng giỏ hàng
         function updateCartTotals(subtotal) {
             $('#subtotal').text('$' + subtotal);
             $('#total').text('$' + subtotal);
         }
 
+        // Ban đầu kiểm tra trạng thái nút
+        updateCheckoutButton();
+
         // Khi xóa sản phẩm
         $('.close').on('click', function () {
             const row = $(this).closest('tr');
             const productId = row.find('input[name="productId"]').val();
 
-            // Gọi API xóa sản phẩm
             $.ajax({
                 url: '/remove-from-cart',
                 method: 'POST',
@@ -143,6 +156,7 @@
                         $('tbody').html('<tr><td colspan="7">Giỏ hàng trống</td></tr>');
                     }
                     updateCartTotals(response.subtotal);
+                    updateCheckoutButton(); // Cập nhật trạng thái nút sau khi xóa
                 },
                 error: function (err) {
                     console.error('Error:', err);
@@ -161,7 +175,6 @@
                 return;
             }
 
-            // Gọi API cập nhật số lượng
             $.ajax({
                 url: '/update-quantity',
                 method: 'POST',
@@ -173,10 +186,11 @@
                     }
 
                     // Cập nhật tổng giá của sản phẩm
-                    row.find('.total-price').text('$' + (response.items.find(item => item.productId === productId).total).toFixed(2));
+                    row.find('.total-price').text('$' + (response.items.find(item => item.productId._id === productId).total).toFixed(2));
 
                     // Cập nhật tổng giỏ hàng
                     updateCartTotals(response.subtotal);
+                    updateCheckoutButton(); // Cập nhật trạng thái nút sau khi thay đổi số lượng
                 },
                 error: function (err) {
                     console.error('Error:', err);
@@ -214,6 +228,7 @@
         padding: 10px 20px;
         border: none;
         border-radius: 5px;
+        cursor: pointer;
     }
 
     .btn-checkout:hover {

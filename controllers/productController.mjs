@@ -1,21 +1,77 @@
 import Product from "../models/product.mjs"; 
 
 const getProductPage = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 9;
+  const skip = (page - 1) * limit;
+  const category = req.query.category || '';
+  const search = req.query.search || '';
+  const sort = req.query.sort || '';
+  const minPrice = parseFloat(req.query.minPrice) || 0;
+  const maxPrice = parseFloat(req.query.maxPrice) || null;
+  const status = req.query.status ? (Array.isArray(req.query.status) ? req.query.status : [req.query.status]) : [];
+
   try {
-    const products = await Product.find();
+    let query = {};
+    if (category) query.category = category;
+    if (search) query.name = { $regex: search, $options: 'i' };
+    if (minPrice || maxPrice) query.price = { $gte: minPrice, $lte: maxPrice || Infinity };
+    if (status.length > 0) {
+      query.$or = [];
+      if (status.includes('sale')) query.$or.push({ sale: true });
+      if (status.includes('newArrival')) query.$or.push({ newArrival: true });
+      if (status.includes('bestSeller')) query.$or.push({ bestSeller: true });
+    }
 
-    const categories = [...new Set(products.map((product) => product.category))];
+    let sortOption = {};
+    switch (sort) {
+      case 'price-asc': sortOption.price = 1; break;
+      case 'price-desc': sortOption.price = -1; break;
+      case 'name-asc': sortOption.name = 1; break;
+      case 'name-desc': sortOption.name = -1; break;
+      default: sortOption.createdAt = -1;
+    }
 
-    res.render("product", {
+    const totalProducts = await Product.countDocuments(query);
+    const products = await Product.find(query).sort(sortOption).skip(skip).limit(limit);
+    const categories = await Product.distinct("category");
+    const maxPriceFromDB = (await Product.find().sort({ price: -1 }).limit(1))[0]?.price || 1000;
+
+    // console.log('Query:', query); // Log để kiểm tra điều kiện lọc
+    // console.log('Products:', products); // Log để kiểm tra danh sách sản phẩm
+    // console.log('Total Products:', totalProducts); // Log để kiểm tra tổng số
+
+    const responseData = {
       categories,
       products,
-    });
+      currentPage: page,
+      totalPages: Math.ceil(totalProducts / limit),
+      category,
+      search,
+      sort,
+      totalProducts,
+      minPrice,
+      maxPrice: maxPrice || maxPriceFromDB,
+      status,
+      maxPriceFromDB,
+    };
+
+    if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
+      return res.json({
+        products,
+        currentPage: page,
+        totalPages: Math.ceil(totalProducts / limit),
+        totalProducts,
+        maxPriceFromDB,
+      });
+    }
+
+    res.render("product", responseData);
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).send("Internal Server Error");
   }
 };
-
 const getProductDetail = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
@@ -28,6 +84,4 @@ const getProductDetail = async (req, res) => {
   }
 };
 
-
 export { getProductDetail, getProductPage };
-
