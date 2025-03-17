@@ -76,19 +76,14 @@
             <div class="col-md-12 d-flex justify-content-between align-items-center">
               <h4 class="product-select">Select Types of Products</h4>
               <div class="d-flex align-items-center">
-                <select class="form-control mr-2" name="sort" id="sortSelect">
+                <select class="form-control mr-2 " name="sort" id="sortSelect">
                   <option value="" <%= sort === '' ? 'selected' : '' %>>Default</option>
                   <option value="price-asc" <%= sort === 'price-asc' ? 'selected' : '' %>>Price: Low to High</option>
                   <option value="price-desc" <%= sort === 'price-desc' ? 'selected' : '' %>>Price: High to Low</option>
                   <option value="name-asc" <%= sort === 'name-asc' ? 'selected' : '' %>>Name: A-Z</option>
                   <option value="name-desc" <%= sort === 'name-desc' ? 'selected' : '' %>>Name: Z-A</option>
                 </select>
-                <select class="selectpicker" name="category" id="categorySelect">
-                  <option value="" <%= category === '' ? 'selected' : '' %>>All Categories</option>
-                  <% categories.forEach(cat => { %>
-                    <option value="<%= cat %>" <%= category === cat ? 'selected' : '' %>><%= cat %></option>
-                  <% }) %>
-                </select>
+                
               </div>
             </div>
           </div>
