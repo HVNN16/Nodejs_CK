@@ -19,7 +19,7 @@ import { isAuthenticated } from "./middlewares/auth.mjs";
 import { attachUser } from "./middlewares/auth.mjs";
 // Khởi tạo ứng dụng Express
 const app = express();
-const port = 3001;
+const port = 3000;
 
 app.use(cors());
 
