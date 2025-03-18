@@ -306,9 +306,9 @@ class HomeController {
         // Giả định dữ liệu sản phẩm (thay bằng database query trong thực tế)
         const product = {
           productId,
-          name: `Product ${productId}`,
-          price: 10.0,
-          image: 'https://example.com/image.jpg',
+          name: `Product ${productId}`, // Thay bằng tên thực từ database
+          price: 10.0, // Thay bằng giá thực
+          image: 'https://example.com/image.jpg', // Thay bằng URL hình ảnh thực
           quantity,
           total: 10.0 * quantity,
         };
