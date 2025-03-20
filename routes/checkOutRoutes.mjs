@@ -1,6 +1,6 @@
 import express from 'express';
 import { checkOutPage, createCheckout, getOrderHistory, getOrderDetail, cancelOrder } from '../controllers/checkOutController.mjs';
-import { isAuthenticated } from '../middlewares/auth.mjs';
+import { isAuthenticated } from '../middlewares/authJwt.mjs';
 
 const router = express.Router();
 

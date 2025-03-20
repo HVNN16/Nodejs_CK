@@ -1,41 +1,38 @@
-// import User from "../models/user.mjs";
-// class UserController {
-//   static async index(req, res) {
-//     let q = req.query.q;
-//     const re = new RegExp(q); 
-//     let users;
-//     if (q) {
-//       users = await User.find({ $or: [{ name: re }, { email: re }] });
-//     } else {
-//       users = await User.find({});
-//     }
-//     res.render("user", { title: "User management", users, q });
-//   }
-//   static async new(req, res) {
-//     res.render("formnew", { title: "User management" });
-//   }
-//   static async create(req, res) {
-//     let { email, name, age } = req.body;
+import User from '../models/user.mjs';
 
-//     let user = await User.create({ email, name, age });
-//     console.log(user);
-//     if (user) {
-//       res.redirect("/users");
-//     } else {
-//       res.render("formnew", { title: "User management" });
-//     }
-//   }
+class UserController {
+  static async index(req, res, data) {
+    try {
+      const users = await User.find();
+      res.render('user_index', { users, user: data.user }); // Truyền biến user
+    } catch (error) {
+      res.status(500).send('Error fetching users');
+    }
+  }
 
-//   static async delete(req, res) {
-//     let id = req.params.id;
-//     let { deletedCount } = await User.deleteOne({ _id: id });
-//     if (deletedCount == 0) {
-//       console.log("Khong xoa duoc !!");
-//     } else {
-//       console.log("Da xoa duoc !!");
-//     }
-//     res.redirect("/users");
-//   }
-// }
+  static async new(req, res, data) {
+    res.render('user_new', { user: data.user }); // Truyền biến user
+  }
 
-// export default UserController;
+  static async create(req, res, data) {
+    try {
+      const { email, name, age, password } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await User.create({ email, name, age, password: hashedPassword });
+      res.redirect('/api/v1');
+    } catch (error) {
+      res.render('user_new', { error, user: data.user }); // Truyền biến user
+    }
+  }
+
+  static async delete(req, res, data) {
+    try {
+      await User.deleteOne({ _id: req.params.id });
+      res.redirect('/api/v1');
+    } catch (error) {
+      res.status(500).send('Error deleting user');
+    }
+  }
+}
+
+export default UserController;

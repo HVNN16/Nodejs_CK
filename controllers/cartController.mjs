@@ -1,17 +1,28 @@
 import Cart from '../models/cart.mjs';
 import Product from '../models/product.mjs';
+import mongoose from 'mongoose';
 
 class CartController {
   static async addToCart(req, res) {
-    const userId = req.session.user._id;
+    console.log('Request body:', req.body);
+    console.log('User:', req.user);
+  
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated or ID not found in token' });
+    }
+  
     const { productId, quantity } = req.body;
-
+    if (!productId || !quantity) {
+      return res.status(400).json({ message: 'productId and quantity are required' });
+    }
+  
     try {
       const product = await Product.findById(productId);
       if (!product) {
         return res.status(404).json({ message: 'Product not found' });
       }
-
+  
       let cart = await Cart.findOne({ userId });
       if (!cart) {
         cart = new Cart({
@@ -27,23 +38,22 @@ class CartController {
         }
       }
       await cart.save();
-
-      // Lấy thông tin giỏ hàng sau khi cập nhật để trả về
+  
       const updatedCart = await Cart.findOne({ userId }).populate('items.productId');
+      if (!updatedCart || !updatedCart.items) {
+        return res.status(500).json({ message: 'Cart not found after saving' });
+      }
+  
       const cartItems = updatedCart.items.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
         total: item.productId.price * item.quantity,
       }));
       const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-
-      // Trả về response JSON thay vì redirect
+  
       res.status(200).json({
         message: 'Product added to cart successfully',
-        cart: {
-          items: cartItems,
-          totalItems: totalItems
-        }
+        cart: { items: cartItems, totalItems },
       });
     } catch (error) {
       console.error('Error adding product to cart:', error);
@@ -52,21 +62,28 @@ class CartController {
   }
 
   static async viewCart(req, res) {
-    const userId = req.session.user._id;
+    if (!req.user || !req.user.id) {
+      return res.redirect('/login');
+    }
+
+    const userId = req.user.id;
 
     try {
       const cart = await Cart.findOne({ userId }).populate('items.productId');
-      if (!cart) {
-        return res.render('cart', { cart: { items: [] }, subtotal: 0 });
-      }
+      const cartData = cart ? {
+        items: cart.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          total: item.productId.price * item.quantity,
+        })),
+        subtotal: cart.items.reduce((acc, item) => acc + item.productId.price * item.quantity, 0)
+      } : { items: [], subtotal: 0 };
 
-      const cartItems = cart.items.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        total: item.productId.price * item.quantity,
-      }));
-      const subtotal = cartItems.reduce((acc, item) => acc + item.total, 0);
-      res.render('cart', { cart: { items: cartItems }, subtotal });
+      res.render('cart', {
+        cart: cartData,
+        subtotal: cartData.subtotal,
+        user: req.user
+      });
     } catch (error) {
       console.error('Error viewing cart:', error);
       res.status(500).send('Lỗi khi tải giỏ hàng');
@@ -74,8 +91,15 @@ class CartController {
   }
 
   static async removeFromCart(req, res) {
-    const userId = req.session.user._id;
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     const { productId } = req.body;
+    if (!productId) {
+      return res.status(400).json({ message: 'productId is required' });
+    }
 
     try {
       const cart = await Cart.findOneAndUpdate(
@@ -107,8 +131,15 @@ class CartController {
   }
 
   static async updateQuantity(req, res) {
-    const userId = req.session.user._id;
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
     const { productId, quantity } = req.body;
+    if (!productId || !quantity) {
+      return res.status(400).json({ message: 'productId and quantity are required' });
+    }
 
     try {
       const cart = await Cart.findOne({ userId });

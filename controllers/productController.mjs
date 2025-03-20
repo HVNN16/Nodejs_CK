@@ -37,10 +37,6 @@ const getProductPage = async (req, res) => {
     const categories = await Product.distinct("category");
     const maxPriceFromDB = (await Product.find().sort({ price: -1 }).limit(1))[0]?.price || 1000;
 
-    // console.log('Query:', query); // Log để kiểm tra điều kiện lọc
-    // console.log('Products:', products); // Log để kiểm tra danh sách sản phẩm
-    // console.log('Total Products:', totalProducts); // Log để kiểm tra tổng số
-
     const responseData = {
       categories,
       products,
@@ -54,6 +50,7 @@ const getProductPage = async (req, res) => {
       maxPrice: maxPrice || maxPriceFromDB,
       status,
       maxPriceFromDB,
+      user: req.user, // Thêm biến user
     };
 
     if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
@@ -72,13 +69,14 @@ const getProductPage = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
+
 const getProductDetail = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
       return res.status(404).send('Không tìm thấy sản phẩm.');
     }
-    res.render('single_product', { product }); 
+    res.render('single_product', { product, user: req.user }); // Thêm biến user
   } catch (error) {
     res.status(500).send('Lỗi khi lấy chi tiết sản phẩm.');
   }

@@ -1,27 +1,24 @@
-import express from "express";
-import jwt from "jsonwebtoken";
-import ApiUserController from "../controllers/api_user_controller.mjs";
+import express from 'express';
+import ApiUserController from '../controllers/api_user_controller.mjs';
 
-// ẨN VIỆC PHẢI ĐĂNG NHẬP TRƯỚC KHI TRUY CẬP
-// function checkLoginApi(req, res, next) {
-//   let token = req.headers.authorization;
-//   try {
-//     var decoded = jwt.verify(token, "demoDA");
-//     next();
-//   } catch (err) {
-//     res.status(404).json({ message: "Ban can phai login de su dung!!!" });
-//   }
-// }
-const apiuserRouter = express.Router();
-// apiuserRouter.get("/users", checkLoginApi, ApiUserController.index);
-apiuserRouter.get("/users", ApiUserController.index);
+const router = express.Router();
 
-apiuserRouter.get("/users/:id", ApiUserController.show);
-apiuserRouter.delete("/users/:id", ApiUserController.destroy);
-apiuserRouter.post("/users", ApiUserController.create);
+// API đăng ký
+router.post('/register', ApiUserController.register);
 
-apiuserRouter.post("/login", ApiUserController.login);
+// API đăng nhập
+router.post('/login', ApiUserController.login);
 
+// API lấy danh sách người dùng
+router.get('/users', ApiUserController.index);
 
+// API lấy thông tin một người dùng
+router.get('/users/:id', ApiUserController.show);
 
-export default apiuserRouter;
+// API xóa người dùng
+router.delete('/users/:id', ApiUserController.destroy);
+
+// API tạo người dùng
+router.post('/users', ApiUserController.create);
+
+export default router;

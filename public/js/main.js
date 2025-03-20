@@ -457,57 +457,61 @@ $(document).ready(function() {
 	  updateProductList(page);
 	});
   
-	// Xử lý thêm vào giỏ hàng
 	$('#productList').on('click', '.btn-add-to-cart', function(e) {
-	  e.preventDefault();
-	  const button = $(this);
-	  const productId = button.data('product-id');
-  
-	  if (!productId) {
-		console.error('Không tìm thấy productId');
-		return;
-	  }
-  
-	  button.prop('disabled', true);
-	  button.find('span').removeClass('flaticon-shopping-bag').addClass('fa fa-spinner fa-spin');
-  
-	  $.ajax({
-		url: '/add-to-cart',
-		method: 'POST',
-		contentType: 'application/json',
-		data: JSON.stringify({ productId: productId, quantity: 1 }),
-		success: function(response) {
-		  $('#cart-message').html(
-			`<div class="alert alert-success alert-dismissible fade show" role="alert">
-			  ${response.message}
-			  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-				<span aria-hidden="true">×</span>
-			  </button>
-			</div>`
-		  );
-		  if (response.cart && response.cart.totalItems) {
-			$('#cart-count').text(response.cart.totalItems);
-		  }
-		  setTimeout(() => $('#cart-message').empty(), 3000);
-		},
-		error: function(xhr) {
-		  const errorMsg = xhr.responseJSON?.message || 'Đã xảy ra lỗi khi thêm vào giỏ hàng';
-		  $('#cart-message').html(
-			`<div class="alert alert-danger alert-dismissible fade show" role="alert">
-			  ${errorMsg}
-			  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-				<span aria-hidden="true">×</span>
-			  </button>
-			</div>`
-		  );
-		},
-		complete: function() {
-		  button.prop('disabled', false);
-		  button.find('span').removeClass('fa fa-spinner fa-spin').addClass('flaticon-shopping-bag');
+		e.preventDefault();
+		const button = $(this);
+		const productId = button.data('product-id');
+	  
+		if (!productId) {
+		  console.error('Không tìm thấy productId');
+		  return;
 		}
+	  
+		button.prop('disabled', true);
+		button.find('span').removeClass('flaticon-shopping-bag').addClass('fa fa-spinner fa-spin');
+	  
+		$.ajax({
+		  url: '/add-to-cart',
+		  method: 'POST',
+		  contentType: 'application/json',
+		  data: JSON.stringify({ productId: productId, quantity: 1 }),
+		  success: function(response) {
+			$('#cart-message').html(
+			  `<div class="alert alert-success alert-dismissible fade show" role="alert">
+				${response.message} <a href="/cart" class="alert-link">View Cart</a>
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				  <span aria-hidden="true">×</span>
+				</button>
+			  </div>`
+			);
+			if (response.cart && response.cart.totalItems) {
+			  $('#cart-count').text(response.cart.totalItems);
+			}
+			setTimeout(() => $('#cart-message').empty(), 3000);
+		  },
+		  error: function(xhr) {
+			const errorMsg = xhr.responseJSON?.message || 'Đã xảy ra lỗi khi thêm vào giỏ hàng';
+			$('#cart-message').html(
+			  `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+				${errorMsg}
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				  <span aria-hidden="true">×</span>
+				</button>
+			  </div>`
+			);
+			// Chuyển hướng tới trang đăng nhập nếu token không hợp lệ
+			if (xhr.status === 302 || xhr.status === 401) {
+			  setTimeout(() => {
+				window.location.href = '/login';
+			  }, 2000);
+			}
+		  },
+		  complete: function() {
+			button.prop('disabled', false);
+			button.find('span').removeClass('fa fa-spinner fa-spin').addClass('flaticon-shopping-bag');
+		  }
+		});
 	  });
-	});
-  
 	// Xử lý reset bộ lọc
 	$('#resetFilters').click(function(e) {
 	  e.preventDefault();
