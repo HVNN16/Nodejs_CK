@@ -107,27 +107,33 @@ class HomeController {
   }
 
   static async getCart(req, res) {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'User not authenticated' });
+    }
+
+    const userId = req.user.id;
+
     try {
-      const userId = req.user?.id;
       const cart = await Cart.findOne({ userId }).populate('items.productId');
-      if (!cart) {
-        return res.status(200).json({ cart: { items: [] }, subtotal: 0 });
-      }
+      const cartData = cart ? {
+        items: cart.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          total: item.productId.price * item.quantity,
+        })),
+        subtotal: cart.items.reduce((acc, item) => acc + item.productId.price * item.quantity, 0)
+      } : { items: [], subtotal: 0 };
 
-      const cartItems = cart.items.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        total: item.productId.price * item.quantity,
-      }));
-      const subtotal = cartItems.reduce((acc, item) => acc + item.total, 0);
-
-      res.status(200).json({ cart: { items: cartItems }, subtotal });
+      res.status(200).json({
+        cart: cartData,
+        subtotal: cartData.subtotal,
+        user: req.user
+      });
     } catch (error) {
-      console.error('Get Cart error:', error);
-      res.status(500).json({ message: 'Server error. Please try again.' });
+      console.error('Error viewing cart:', error);
+      res.status(500).json({ message: 'Error viewing cart', error: error.message });
     }
   }
-
   static async addToCart(req, res) {
     try {
       const userId = req.user?.id;

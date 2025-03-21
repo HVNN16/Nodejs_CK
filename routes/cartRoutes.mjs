@@ -7,9 +7,6 @@ const router = express.Router();
 // Lấy giỏ hàng (giao diện HTML)
 router.get('/cart', isAuthenticated, CartController.viewCart);
 
-// Lấy giỏ hàng (JSON API)
-router.get('/api/cart', isAuthenticated, CartController.viewCart);
-
 // Thêm vào giỏ hàng
 router.post('/add-to-cart', isAuthenticated, CartController.addToCart);
 

@@ -33,14 +33,5 @@ rootRouter.get('/logout', (req, res) => {
   res.redirect('/login');
 });
 
-// API endpoints cho Flutter
-rootRouter.post('/api/register', HomeController.apiCreateSignup);
-rootRouter.post('/api/login', HomeController.apiCreateLogin);
-
-// API endpoints cho giỏ hàng
-rootRouter.get('/api/cart', isAuthenticated, HomeController.getCart);
-rootRouter.post('/api/cart/add', isAuthenticated, HomeController.addToCart);
-rootRouter.put('/api/cart/update', isAuthenticated, HomeController.updateQuantity);
-rootRouter.delete('/api/cart/remove', isAuthenticated, HomeController.removeFromCart);
 
 export default rootRouter;

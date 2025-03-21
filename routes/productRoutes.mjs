@@ -79,28 +79,5 @@ router.get('/product/autocomplete', async (req, res) => {
   }
 });
 
-// API endpoint để lấy danh sách sản phẩm (cho Flutter)
-router.get('/admin/api/products', async (req, res) => {
-  try {
-    const products = await Product.find();
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ error: 'Lỗi khi lấy danh sách sản phẩm.' });
-  }
-});
 
-
-// API để lấy chi tiết sản phẩm (cho Flutter)
-router.get('/api/product/:id', async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-    res.status(200).json(product);
-  } catch (error) {
-    console.error('Error fetching product:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
 export default router;
