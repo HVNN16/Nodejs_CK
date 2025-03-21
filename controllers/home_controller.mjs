@@ -108,7 +108,7 @@ class HomeController {
 
   static async getCart(req, res) {
     try {
-      const userId = req.user.email;
+      const userId = req.user?.id;
       const cart = await Cart.findOne({ userId }).populate('items.productId');
       if (!cart) {
         return res.status(200).json({ cart: { items: [] }, subtotal: 0 });
