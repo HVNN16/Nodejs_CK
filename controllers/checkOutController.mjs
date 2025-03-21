@@ -37,6 +37,7 @@ export const checkOutPage = async (req, res) => {
 };
 
 // Create a new checkout order
+// checkOutController.mjs
 export const createCheckout = async (req, res) => {
   if (!req.user) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -44,6 +45,16 @@ export const createCheckout = async (req, res) => {
 
   const userId = req.user.id;
   const { firstname, lastname, phone, email, streetaddress, apartment, towncity, country, payment } = req.body;
+
+  // Validation
+  const requiredFields = ['firstname', 'lastname', 'phone', 'email', 'streetaddress', 'towncity', 'country', 'payment'];
+  const missingFields = requiredFields.filter(field => !req.body[field]);
+  if (missingFields.length > 0) {
+    return res.status(400).json({ message: `Missing required fields: ${missingFields.join(', ')}` });
+  }
+  if (!['Cash', 'Card'].includes(payment)) {
+    return res.status(400).json({ message: "Invalid payment method. Must be 'Cash' or 'Card'" });
+  }
 
   try {
     const cart = await Cart.findOne({ userId }).populate("items.productId");
@@ -72,10 +83,9 @@ export const createCheckout = async (req, res) => {
     res.status(201).json({ message: "Order placed successfully!" });
   } catch (error) {
     console.error("Error creating checkout order:", error);
-    res.status(500).json({ message: "Error creating checkout order" });
+    res.status(500).json({ message: "Error creating checkout order", error: error.message });
   }
 };
-
 // Get order history
 export const getOrderHistory = async (req, res) => {
   if (!req.user) {
@@ -168,5 +178,65 @@ export const cancelOrder = async (req, res) => {
   } catch (error) {
     console.error("Error cancelling order:", error);
     res.status(500).json({ message: "Error cancelling order" });
+  }
+};
+
+export const getOrderHistoryApi = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const userId = req.user.id;
+  const page = parseInt(req.query.page) || 1;
+  const limit = 5;
+  const skip = (page - 1) * limit;
+  const search = req.query.search || "";
+
+  try {
+    let query = { userId };
+    if (search) {
+      query.$or = [
+        { _id: search },
+        { "shippingInfo.firstname": { $regex: search, $options: "i" } },
+        { "shippingInfo.lastname": { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const totalOrders = await Checkout.countDocuments(query);
+    const orders = await Checkout.find(query)
+      .populate("products.productId")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({
+      orders,
+      currentPage: page,
+      totalPages: Math.ceil(totalOrders / limit),
+      search,
+    });
+  } catch (error) {
+    console.error("Error fetching order history:", error);
+    res.status(500).json({ message: "Error fetching order history", error: error.message });
+  }
+};
+
+export const getOrderDetailApi = async (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const userId = req.user.id;
+  const orderId = req.params.id;
+
+  try {
+    const order = await Checkout.findOne({ _id: orderId, userId }).populate("products.productId");
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    res.status(200).json(order);
+  } catch (error) {
+    console.error("Error fetching order detail:", error);
+    res.status(500).json({ message: "Error fetching order detail", error: error.message });
   }
 };

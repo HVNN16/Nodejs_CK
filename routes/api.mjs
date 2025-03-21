@@ -4,6 +4,7 @@ import HomeController from '../controllers/home_controller.mjs';
 import { isAuthenticated } from '../middlewares/authJwt.mjs';
 import Product from '../models/product.mjs';
 import rootRouter from './root.mjs';
+import { getOrderDetailApi, getOrderHistoryApi } from '../controllers/checkOutController.mjs';
 
 const router = express.Router();
 
@@ -60,4 +61,7 @@ rootRouter.post('/api/cart/add', isAuthenticated, HomeController.addToCart);
 rootRouter.put('/api/cart/update', isAuthenticated, HomeController.updateQuantity);
 rootRouter.delete('/api/cart/remove', isAuthenticated, HomeController.removeFromCart);
 
+// Route mới trong checkOutRoutes.mjs
+router.get('/api/history', isAuthenticated, getOrderHistoryApi);
+router.get('/api/history/:id', isAuthenticated, getOrderDetailApi);
 export default router;
