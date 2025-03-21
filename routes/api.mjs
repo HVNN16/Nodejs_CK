@@ -27,7 +27,7 @@ router.delete('/users/:id', ApiUserController.destroy);
 router.post('/users', ApiUserController.create);
 
 // API endpoint để lấy danh sách sản phẩm (cho Flutter)
-router.get('/admin/api/products', async (req, res) => {
+router.get('/products', async (req, res) => {
     try {
       const products = await Product.find();
       res.json(products);
@@ -38,7 +38,7 @@ router.get('/admin/api/products', async (req, res) => {
   
   
   // API để lấy chi tiết sản phẩm (cho Flutter)
-  router.get('/api/product/:id', async (req, res) => {
+  router.get('/product/:id', async (req, res) => {
     try {
       const product = await Product.findById(req.params.id);
       if (!product) {
