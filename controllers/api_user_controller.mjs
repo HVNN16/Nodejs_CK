@@ -31,30 +31,25 @@ class ApiUserController {
       if (!email || !password) {
         return res.status(400).json({ message: "Email và mật khẩu là bắt buộc." });
       }
-
       const user = await User.findOne({ email });
       if (!user) {
         return res.status(401).json({ message: "Email không tồn tại." });
       }
-
       const checkPass = await bcrypt.compare(password, user.password);
       if (!checkPass) {
         return res.status(401).json({ message: "Mật khẩu không đúng." });
       }
-
-      const payload = { name: user.name, email: user.email };
+      const payload = { id: user._id.toString(), name: user.name, email: user.email }; // Thêm id
       const token = jwt.sign(payload, "demoDA", { expiresIn: "1h" });
-
       res.status(200).json({
         message: "Đăng nhập thành công!",
         accessToken: token,
-        user: { name: user.name, email: user.email },
+        user: { id: user._id.toString(), name: user.name, email: user.email }, // Thêm id vào user
       });
     } catch (error) {
       res.status(500).json({ message: "Lỗi khi đăng nhập", error: error.message });
     }
   }
-
   static async index(req, res) {
     try {
       const users = await User.find({});

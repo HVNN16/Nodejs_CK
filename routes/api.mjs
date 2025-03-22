@@ -5,6 +5,7 @@ import { isAuthenticated } from '../middlewares/authJwt.mjs';
 import Product from '../models/product.mjs';
 import rootRouter from './root.mjs';
 import { getOrderDetailApi, getOrderHistoryApi } from '../controllers/checkOutController.mjs';
+import CartController from '../controllers/cartController.mjs';
 
 const router = express.Router();
 
@@ -57,9 +58,9 @@ rootRouter.post('/api/login', HomeController.apiCreateLogin);
 // API endpoints cho giỏ hàng
 
 rootRouter.get('/api/cart', isAuthenticated, HomeController.getCart);
-rootRouter.post('/api/cart/add', isAuthenticated, HomeController.addToCart);
-rootRouter.put('/api/cart/update', isAuthenticated, HomeController.updateQuantity);
-rootRouter.delete('/api/cart/remove', isAuthenticated, HomeController.removeFromCart);
+rootRouter.post('/api/cart/add', isAuthenticated, CartController.addToCart);
+rootRouter.put('/api/cart/update', isAuthenticated, CartController.updateQuantity);
+rootRouter.delete('/api/cart/remove', isAuthenticated, CartController.removeFromCart);
 
 // Route mới trong checkOutRoutes.mjs
 router.get('/api/history', isAuthenticated, getOrderHistoryApi);

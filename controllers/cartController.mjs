@@ -4,46 +4,40 @@ import mongoose from 'mongoose';
 
 class CartController {
   static async addToCart(req, res) {
-    console.log('Request body:', req.body);
-    console.log('User:', req.user);
-  
-    const userId = req.user?.id;
-    if (!userId) {
-      return res.status(401).json({ message: 'User not authenticated or ID not found in token' });
-    }
-  
-    const { productId, quantity } = req.body;
-    if (!productId || !quantity) {
-      return res.status(400).json({ message: 'productId and quantity are required' });
-    }
-  
     try {
+      const userId = req.user?.id;
+      const { productId, quantity } = req.body;
+      console.log('Add to Cart:', { userId, productId, quantity });
+  
+      if (!productId || !quantity || quantity <= 0) {
+        return res.status(400).json({ message: 'Product ID and valid quantity are required.' });
+      }
+  
       const product = await Product.findById(productId);
       if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
+        return res.status(404).json({ message: 'Product not found.' });
       }
   
-      let cart = await Cart.findOne({ userId });
-      if (!cart) {
-        cart = new Cart({
-          userId,
-          items: [{ productId: product._id, quantity }],
-        });
-      } else {
-        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
-        if (itemIndex >= 0) {
-          cart.items[itemIndex].quantity += parseInt(quantity);
-        } else {
-          cart.items.push({ productId: product._id, quantity });
-        }
+      // Cố gắng tăng quantity nếu sản phẩm đã tồn tại
+      const cartUpdate = await Cart.findOneAndUpdate(
+        { userId, 'items.productId': productId },
+        { $inc: { 'items.$.quantity': parseInt(quantity) } },
+        { new: true }
+      );
+  
+      if (!cartUpdate) {
+        // Nếu không tìm thấy mục nào, thêm mới
+        await Cart.updateOne(
+          { userId },
+          {
+            $push: { items: { productId: product._id, quantity: parseInt(quantity) } },
+            $setOnInsert: { userId }
+          },
+          { upsert: true }
+        );
       }
-      await cart.save();
   
       const updatedCart = await Cart.findOne({ userId }).populate('items.productId');
-      if (!updatedCart || !updatedCart.items) {
-        return res.status(500).json({ message: 'Cart not found after saving' });
-      }
-  
       const cartItems = updatedCart.items.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -52,22 +46,24 @@ class CartController {
       const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   
       res.status(200).json({
-        message: 'Product added to cart successfully',
-        cart: { items: cartItems, totalItems },
+        message: 'Product added to cart successfully.',
+        cart: {
+          items: cartItems,
+          totalItems: totalItems,
+        },
       });
     } catch (error) {
-      console.error('Error adding product to cart:', error);
-      res.status(500).json({ message: 'Server error', error: error.message });
+      console.error('Add to Cart error:', error);
+      res.status(500).json({ message: 'Server error. Please try again.' });
     }
   }
-
   static async viewCart(req, res) {
     if (!req.user || !req.user.id) {
       return res.redirect('/login');
     }
-
+  
     const userId = req.user.id;
-
+  
     try {
       const cart = await Cart.findOne({ userId }).populate('items.productId');
       const cartData = cart ? {
@@ -78,7 +74,7 @@ class CartController {
         })),
         subtotal: cart.items.reduce((acc, item) => acc + item.productId.price * item.quantity, 0)
       } : { items: [], subtotal: 0 };
-
+  
       res.render('cart', {
         cart: cartData,
         subtotal: cartData.subtotal,
@@ -89,7 +85,6 @@ class CartController {
       res.status(500).send('Lỗi khi tải giỏ hàng');
     }
   }
-
   static async removeFromCart(req, res) {
     const userId = req.user?.id;
     if (!userId) {

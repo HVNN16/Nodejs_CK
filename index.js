@@ -50,7 +50,7 @@ productDBConnection.on("connected", () => {
 // Middleware để lấy user từ token (nếu có, không bắt buộc)
 
 // Áp dụng middleware cho tất cả các route
-app.use(getUserFromToken);
+//app.use(getUserFromToken);
 app.use(addBaseUrl);
 // Định nghĩa các route
 app.use("/", rootRouter);
