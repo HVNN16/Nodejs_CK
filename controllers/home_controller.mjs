@@ -109,12 +109,12 @@ class HomeController {
   static async getCart(req, res) {
     console.log('req.user in getCart:', req.user); // Debug
     const userId = req.user?.id;
-    console.log('User ID from token:', userId);
+    //console.log('User ID from token:', userId);
     try {
       const cart = await Cart.findOne({ userId: new mongoose.Types.ObjectId(userId) }).populate('items.productId');
-      console.log('Cart found:', cart);
+      //console.log('Cart found:', cart);
       if (!cart) {
-        console.log('No cart found for user:', userId);
+        //console.log('No cart found for user:', userId);
         return res.status(200).json({
           cart: { items: [], subtotal: 0 },
           subtotal: 0,
@@ -123,7 +123,7 @@ class HomeController {
       }
       const cartData = {
         items: cart.items.map(item => {
-          console.log('Item:', item);
+          //console.log('Item:', item);
           return {
             productId: item.productId,
             quantity: item.quantity,
@@ -138,7 +138,7 @@ class HomeController {
         user: req.user
       });
     } catch (error) {
-      console.error('Error viewing cart:', error);
+      //console.error('Error viewing cart:', error);
       res.status(500).json({ message: 'Error viewing cart', error: error.message });
     }
   }
