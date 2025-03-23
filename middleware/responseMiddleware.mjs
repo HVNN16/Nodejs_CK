@@ -1,5 +1,5 @@
 const addBaseUrl = (req, res, next) => {
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || 'https://nodejs-ck-x8q8.onrender.com';
     const originalJson = res.json;
     res.json = function (data) {
       const modifiedData = JSON.parse(JSON.stringify(data));
