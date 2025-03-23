@@ -1,4 +1,4 @@
-import Checkout from '../models/Checkout.mjs';
+import Checkout from '../models/checkout.mjs';
 import Cart from '../models/Cart.mjs';
 class CheckoutService {
   static async createCheckout(userId, shippingInfo) {

@@ -1,4 +1,4 @@
-import Product from '../models/Product.mjs';
+import Product from '../models/product.mjs';
 
 class ProductService {
   static async getProducts({ page = 1, limit = 10, search = '', category = '' } = {}) { const query = {}; if (search) query.name = { $regex: search, $options: 'i' }; if (category) query.category = category; const products = await Product.find(query) .skip((page - 1) * limit) .limit(parseInt(limit)) .exec(); const total = await Product.countDocuments(query); return { products, total, page, totalPages: Math.ceil(total / limit) }; }

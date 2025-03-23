@@ -14,5 +14,7 @@ const productSchema = new mongoose.Schema({
   content: { type: String, default: '' },
 });
 
-// Định nghĩa và xuất model trực tiếp từ mongoose
-export default mongoose.model('Product', productSchema);
+// Kiểm tra xem model đã tồn tại chưa, nếu chưa thì định nghĩa
+const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
+
+export default Product;

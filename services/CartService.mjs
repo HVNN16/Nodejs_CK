@@ -1,5 +1,5 @@
-import Cart from '../models/Cart.mjs';
-import Product from '../models/Product.mjs';
+import Cart from '../models/cart.mjs';
+import Product from '../models/product.mjs';
 
 class CartService {
   static async getCart(userId) {

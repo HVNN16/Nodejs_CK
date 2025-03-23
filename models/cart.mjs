@@ -25,5 +25,7 @@ const cartSchema = new mongoose.Schema({
   ],
 });
 
-// Xuất model trực tiếp từ mongoose
-export default mongoose.model('Cart', cartSchema);
+// Kiểm tra xem model đã tồn tại chưa, nếu chưa thì định nghĩa
+const Cart = mongoose.models.Cart || mongoose.model('Cart', cartSchema);
+
+export default Cart;
