@@ -1,6 +1,5 @@
 import Checkout from '../models/Checkout.mjs';
 import Cart from '../models/Cart.mjs';
-
 class CheckoutService {
   static async createCheckout(userId, shippingInfo) {
     const cart = await Cart.findOne({ userId }).populate('items.productId');

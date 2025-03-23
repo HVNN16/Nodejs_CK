@@ -1,4 +1,4 @@
-import Blog from '../models/Blog.mjs';
+import Blog from '../models/blog.mjs';
 
 class BlogService {
   static async getBlogs() {

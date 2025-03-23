@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import dbConnection from '../config/connectDB.mjs';
 
+// Định nghĩa schema cho User
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -10,4 +10,5 @@ const userSchema = new mongoose.Schema({
   role: { type: String, default: 'User', enum: ['Admin', 'User'] },
 });
 
-export default dbConnection.model('User', userSchema);
+// Xuất model trực tiếp từ mongoose
+export default mongoose.model('User', userSchema);

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import dbConnection from '../config/connectDB.mjs';
 
+// Định nghĩa schema cho Message
 const messageSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
@@ -9,4 +9,5 @@ const messageSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default dbConnection.model('Message', messageSchema);
+// Xuất model trực tiếp từ mongoose
+export default mongoose.model('Message', messageSchema);

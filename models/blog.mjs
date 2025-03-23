@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import dbConnection from '../config/connectDB.mjs';
 
+// Định nghĩa schema cho Blog
 const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
@@ -9,4 +9,5 @@ const blogSchema = new mongoose.Schema({
   content: { type: String, required: true },
 });
 
-export default dbConnection.model('Blog', blogSchema);
+// Xuất model trực tiếp từ mongoose
+export default mongoose.model('Blog', blogSchema);

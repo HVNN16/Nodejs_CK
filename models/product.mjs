@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import dbConnection from '../config/connectDB.mjs';
 
+// Định nghĩa schema cho Product
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   category: { type: String, required: true, trim: true },
@@ -14,6 +14,5 @@ const productSchema = new mongoose.Schema({
   content: { type: String, default: '' },
 });
 
-const Product = dbConnection.model('Product', productSchema);
-
-export default Product;
+// Định nghĩa và xuất model trực tiếp từ mongoose
+export default mongoose.model('Product', productSchema);

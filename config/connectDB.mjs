@@ -5,17 +5,18 @@ dotenv.config();
 
 const mongoURI = process.env.MONGO_URI;
 
-const dbConnection = mongoose.createConnection(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+async function connectDB() {
+  try {
+    const connection = await mongoose.connect(mongoURI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log('Connected to MongoDB database!');
+    return connection;
+  } catch (error) {
+    console.error('Error connecting to MongoDB database:', error);
+    throw error; // Ném lỗi để xử lý ở nơi gọi hàm
+  }
+}
 
-dbConnection.once('open', () => {
-  console.log('Connected to MongoDB database!');
-});
-
-dbConnection.on('error', (err) => {
-  console.error('Error connecting to MongoDB database:', err);
-});
-
-export default dbConnection;
+export default connectDB;

@@ -1,4 +1,4 @@
-import User from '../models/User.mjs';
+import User from '../models/user.mjs';
 import bcrypt from 'bcrypt';
 
 class UserService {

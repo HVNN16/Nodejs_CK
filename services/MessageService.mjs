@@ -1,4 +1,4 @@
-import Message from '../models/Message.mjs';
+import Message from '../models/message.mjs';
 
 class MessageService {
   static async submitMessage({ name, email, subject, message }) {
