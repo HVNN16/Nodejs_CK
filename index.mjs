@@ -24,17 +24,19 @@ dotenv.config();
 
 // Gọi connectDB trước khi sử dụng các route hoặc model
 connectDB().then(() => {
-  // Sửa CORS để cho phép Flutter truy cập
+  // Cấu hình CORS
   app.use(cors({
     origin: (origin, callback) => {
-      // Trong production, cho phép Flutter (origin null hoặc localhost) và web
       if (process.env.NODE_ENV === 'production') {
         const allowedOrigins = [
           'https://nodejs-ck-x8q8.onrender.com', // Web
-          'http://localhost:8080', // Flutter debug
-          undefined // Cho phép yêu cầu không có origin (như từ Flutter)
+          'http://localhost:8080',              // Flutter debug trên local
+          'http://localhost:3000',              // Server local (nếu test)
+          'http://10.0.2.2:3000',              // Android emulator truy cập local
+          undefined                             // Cho phép yêu cầu không có origin (Flutter mobile)
         ];
-        if (allowedOrigins.includes(origin)) {
+        console.log('Request origin:', origin); // Debug origin của yêu cầu
+        if (allowedOrigins.includes(origin) || !origin) {
           callback(null, true);
         } else {
           callback(new Error('Not allowed by CORS'));
@@ -44,8 +46,8 @@ connectDB().then(() => {
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Đảm bảo hỗ trợ các phương thức cần thiết
-    allowedHeaders: ['Content-Type', 'Authorization'] // Đảm bảo header từ Flutter được chấp nhận
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   }));
 
   app.use(cookieParser());
@@ -58,7 +60,7 @@ connectDB().then(() => {
   app.use(getUserFromToken);
   app.use(addBaseUrl);
 
-  // Thêm log để debug yêu cầu
+  // Log tất cả yêu cầu
   app.use((req, res, next) => {
     console.log(`Received ${req.method} request to ${req.url}`);
     next();
@@ -76,7 +78,7 @@ connectDB().then(() => {
   app.use('/users', userRoutes);
 
   app.use((req, res) => {
-    console.log(`404 for ${req.method} ${req.url}`); // Debug 404
+    console.log(`404 for ${req.method} ${req.url}`);
     res.status(404).render('404', { title: 'Page Not Found', user: req.user });
   });
 
