@@ -1,12 +1,8 @@
 const addBaseUrl = (req, res, next) => {
     const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-  
-    // Ghi đè phương thức res.json để thêm baseUrl vào các trường image
     const originalJson = res.json;
     res.json = function (data) {
-      const modifiedData = JSON.parse(JSON.stringify(data)); // Deep clone
-  
-      // Hàm đệ quy để tìm và sửa các trường image
+      const modifiedData = JSON.parse(JSON.stringify(data));
       const addBaseUrlToImages = (obj) => {
         if (Array.isArray(obj)) {
           obj.forEach(addBaseUrlToImages);
@@ -20,11 +16,9 @@ const addBaseUrl = (req, res, next) => {
           }
         }
       };
-  
       addBaseUrlToImages(modifiedData);
       return originalJson.call(this, modifiedData);
     };
-  
     next();
   };
   

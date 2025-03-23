@@ -1,4 +1,4 @@
-import Product from "../models/product.mjs"; 
+import Product from "../models/Product.mjs";
 
 const getProductPage = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -12,6 +12,7 @@ const getProductPage = async (req, res) => {
   const status = req.query.status ? (Array.isArray(req.query.status) ? req.query.status : [req.query.status]) : [];
 
   try {
+    console.log('Database connected:', Product.db.name);
     let query = {};
     if (category) query.category = category;
     if (search) query.name = { $regex: search, $options: 'i' };
@@ -32,8 +33,12 @@ const getProductPage = async (req, res) => {
       default: sortOption.createdAt = -1;
     }
 
+    console.log('Query:', query);
     const totalProducts = await Product.countDocuments(query);
     const products = await Product.find(query).sort(sortOption).skip(skip).limit(limit);
+    console.log('Total products:', totalProducts);
+    console.log('Products:', products);
+
     const categories = await Product.distinct("category");
     const maxPriceFromDB = (await Product.find().sort({ price: -1 }).limit(1))[0]?.price || 1000;
 
@@ -50,19 +55,20 @@ const getProductPage = async (req, res) => {
       maxPrice: maxPrice || maxPriceFromDB,
       status,
       maxPriceFromDB,
-      user: req.user, // Thêm biến user
+      user: req.user,
     };
 
+    // Kiểm tra nếu là yêu cầu AJAX (có header X-Requested-With: XMLHttpRequest)
     if (req.xhr || req.headers['x-requested-with'] === 'XMLHttpRequest') {
       return res.json({
-        products,
+        products: products,
         currentPage: page,
         totalPages: Math.ceil(totalProducts / limit),
-        totalProducts,
-        maxPriceFromDB,
+        totalProducts: totalProducts,
       });
     }
 
+    console.log('Response data for render:', responseData);
     res.render("product", responseData);
   } catch (error) {
     console.error("Error fetching products:", error);
@@ -76,7 +82,7 @@ const getProductDetail = async (req, res) => {
     if (!product) {
       return res.status(404).send('Không tìm thấy sản phẩm.');
     }
-    res.render('single_product', { product, user: req.user }); // Thêm biến user
+    res.render('single_product', { product, user: req.user });
   } catch (error) {
     res.status(500).send('Lỗi khi lấy chi tiết sản phẩm.');
   }
