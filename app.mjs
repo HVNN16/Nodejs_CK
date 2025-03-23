@@ -18,10 +18,20 @@ import adminRoutes from './routes/web/adminRoutes.mjs';
 import userRoutes from './routes/web/userRoutes.mjs';
 
 const app = express();
-const port = 3000;
+
+// Sử dụng biến môi trường PORT từ Render, mặc định là 3000 nếu không có
+const port = process.env.PORT || 3000;
 
 dotenv.config();
-app.use(cors({ origin: 'https://nodejs-ck-x8q8.onrender.com', credentials: true }));
+
+// Cấu hình CORS linh hoạt hơn
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? 'https://nodejs-ck-x8q8.onrender.com' // Chỉ cho phép origin này trong production
+    : '*', // Cho phép tất cả trong development
+  credentials: true
+}));
+
 app.use(cookieParser());
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -34,6 +44,7 @@ dbConnection.on('connected', () => console.log('Connected to MongoDB database'))
 app.use(getUserFromToken);
 app.use(addBaseUrl);
 
+// Định tuyến
 app.use('/api', apiRoutes);
 app.use('/', rootRoutes);
 app.use('/', aboutRoutes);
@@ -50,6 +61,7 @@ app.use((req, res) => {
   res.status(404).render('404', { title: 'Page Not Found', user: req.user });
 });
 
-app.listen(port, () => {
-  console.log(`Server started on http://localhost:${port}`);
+// Lắng nghe trên 0.0.0.0 để nhận lưu lượng từ bên ngoài
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Server started on port ${port}`);
 });
