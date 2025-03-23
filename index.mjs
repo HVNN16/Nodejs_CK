@@ -24,11 +24,28 @@ dotenv.config();
 
 // Gọi connectDB trước khi sử dụng các route hoặc model
 connectDB().then(() => {
+  // Sửa CORS để cho phép Flutter truy cập
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-      ? 'https://nodejs-ck-x8q8.onrender.com'
-      : '*',
-    credentials: true
+    origin: (origin, callback) => {
+      // Trong production, cho phép Flutter (origin null hoặc localhost) và web
+      if (process.env.NODE_ENV === 'production') {
+        const allowedOrigins = [
+          'https://nodejs-ck-x8q8.onrender.com', // Web
+          'http://localhost:8080', // Flutter debug
+          undefined // Cho phép yêu cầu không có origin (như từ Flutter)
+        ];
+        if (allowedOrigins.includes(origin)) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      } else {
+        callback(null, true); // Trong dev, cho phép tất cả (*)
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Đảm bảo hỗ trợ các phương thức cần thiết
+    allowedHeaders: ['Content-Type', 'Authorization'] // Đảm bảo header từ Flutter được chấp nhận
   }));
 
   app.use(cookieParser());
@@ -40,6 +57,12 @@ connectDB().then(() => {
 
   app.use(getUserFromToken);
   app.use(addBaseUrl);
+
+  // Thêm log để debug yêu cầu
+  app.use((req, res, next) => {
+    console.log(`Received ${req.method} request to ${req.url}`);
+    next();
+  });
 
   app.use('/api', apiRoutes);
   app.use('/', rootRoutes);
@@ -53,6 +76,7 @@ connectDB().then(() => {
   app.use('/users', userRoutes);
 
   app.use((req, res) => {
+    console.log(`404 for ${req.method} ${req.url}`); // Debug 404
     res.status(404).render('404', { title: 'Page Not Found', user: req.user });
   });
 
