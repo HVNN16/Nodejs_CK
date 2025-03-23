@@ -21,7 +21,7 @@ const app = express();
 const port = 3000;
 
 dotenv.config();
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: 'https://nodejs-ck-x8q8.onrender.com', credentials: true }));
 app.use(cookieParser());
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: false }));
