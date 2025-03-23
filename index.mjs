@@ -24,27 +24,9 @@ dotenv.config();
 
 // Gọi connectDB trước khi sử dụng các route hoặc model
 connectDB().then(() => {
-  // Cấu hình CORS
+  // Cấu hình CORS: Cho phép tất cả origin
   app.use(cors({
-    origin: (origin, callback) => {
-      if (process.env.NODE_ENV === 'production') {
-        const allowedOrigins = [
-          'https://nodejs-ck-x8q8.onrender.com', // Web
-          'http://localhost:8080',              // Flutter debug trên local
-          'http://localhost:3000',              // Server local (nếu test)
-          'http://10.0.2.2:3000',              // Android emulator truy cập local
-          undefined                             // Cho phép yêu cầu không có origin (Flutter mobile)
-        ];
-        console.log('Request origin:', origin); // Debug origin của yêu cầu
-        if (allowedOrigins.includes(origin) || !origin) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      } else {
-        callback(null, true); // Trong dev, cho phép tất cả (*)
-      }
-    },
+    origin: '*', // Cho phép mọi origin
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
