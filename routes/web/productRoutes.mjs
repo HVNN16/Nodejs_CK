@@ -1,5 +1,5 @@
 import express from 'express';
-import { getProductDetail, getProductPage } from '../../controllers/ProductController.mjs';
+import { getProductDetail, getProductPage } from '../../controllers/productController.mjs';
 import { getUserFromToken } from '../../middleware/authMiddleware.mjs';
 
 const router = express.Router();
