@@ -5,7 +5,7 @@ import CartController from '../../controllers/cartController.mjs';
 import { cancelOrder, createCheckoutApi, getOrderDetailApi, getOrderHistoryApi } from '../../controllers/checkOutController.mjs';
 import ProductService from '../../services/ProductService.mjs';
 import { isAdmin, isAuthenticated } from '../../middleware/authMiddleware.mjs';
-import AdminController from '../../controllers/AdminController.mjs';
+import AdminController from '../../controllers/adminController.mjs';
 
 const router = express.Router();
 
