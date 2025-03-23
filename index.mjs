@@ -24,11 +24,11 @@ const port = process.env.PORT || 3000;
 
 dotenv.config();
 
-// Cấu hình CORS linh hoạt hơn
+// Cấu hình CORS linh hoạt
 app.use(cors({
   origin: process.env.NODE_ENV === 'production'
-    ? 'https://nodejs-ck-x8q8.onrender.com' // Chỉ cho phép origin này trong production
-    : '*', // Cho phép tất cả trong development
+    ? 'https://nodejs-ck-x8q8.onrender.com'
+    : '*',
   credentials: true
 }));
 
