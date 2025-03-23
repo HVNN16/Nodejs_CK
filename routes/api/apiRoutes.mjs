@@ -2,7 +2,7 @@ import express from 'express';
 import ApiUserController from '../../controllers/ApiUserController.mjs';
 import HomeController from '../../controllers/HomeController.mjs';
 import CartController from '../../controllers/cartController.mjs';
-import { cancelOrder, createCheckoutApi, getOrderDetailApi, getOrderHistoryApi } from '../../controllers/CheckoutController.mjs';
+import { cancelOrder, createCheckoutApi, getOrderDetailApi, getOrderHistoryApi } from '../../controllers/checkOutController.mjs';
 import ProductService from '../../services/ProductService.mjs';
 import { isAdmin, isAuthenticated } from '../../middleware/authMiddleware.mjs';
 import AdminController from '../../controllers/AdminController.mjs';
