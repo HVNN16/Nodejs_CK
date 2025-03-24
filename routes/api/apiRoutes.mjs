@@ -6,6 +6,7 @@ import { cancelOrder, createCheckoutApi, getOrderDetailApi, getOrderHistoryApi }
 import ProductService from '../../services/ProductService.mjs';
 import { isAdmin, isAuthenticated } from '../../middleware/authMiddleware.mjs';
 import AdminController from '../../controllers/adminController.mjs';
+import { getBlogDetailAPI, getBlogsAPI } from '../../controllers/BlogController.mjs';
 
 const router = express.Router();
 
@@ -55,4 +56,9 @@ router.post('/history/:id/cancel', isAuthenticated, cancelOrder);
 
 // Admin APIs
 router.post('/admin/users', isAuthenticated, isAdmin, AdminController.createUserApi);
+
+// Blog APIs
+router.get('/blogs', getBlogsAPI);
+router.get('/blogs/:id', getBlogDetailAPI);
+
 export default router;

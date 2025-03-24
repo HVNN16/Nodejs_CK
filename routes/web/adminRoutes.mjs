@@ -17,5 +17,4 @@ router.post('/products/create', isAuthenticated, isAdmin, AdminController.create
 router.get('/products/edit/:id', isAuthenticated, isAdmin, AdminController.editProduct);
 router.post('/products/update/:id', isAuthenticated, isAdmin, AdminController.updateProduct);
 router.post('/products/delete/:id', isAuthenticated, isAdmin, AdminController.deleteProduct);
-
 export default router;

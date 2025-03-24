@@ -1,6 +1,6 @@
 import express from 'express';
-import { getBlogPage, getBlogDetail } from '../../controllers/blogController.mjs';
 import { getUserFromToken } from '../../middleware/authMiddleware.mjs';
+import { getBlogDetail, getBlogPage } from '../../controllers/BlogController.mjs';
 
 const router = express.Router();
 
