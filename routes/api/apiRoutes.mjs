@@ -6,7 +6,7 @@ import { cancelOrder, createCheckoutApi, getOrderDetailApi, getOrderHistoryApi }
 import ProductService from '../../services/ProductService.mjs';
 import { isAdmin, isAuthenticated } from '../../middleware/authMiddleware.mjs';
 import AdminController from '../../controllers/adminController.mjs';
-import { getBlogDetailAPI, getBlogsAPI } from '../../controllers/BlogController.mjs';
+import { getBlogDetailAPI, getBlogsAPI } from '../../controllers/blogController.mjs';
 
 const router = express.Router();
 
