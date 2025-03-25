@@ -1,4 +1,4 @@
-import Blog from '../models/Blog.mjs';
+import Blog from '../models/blog.mjs';
 
 // Lấy danh sách tất cả blog
 const getBlogs = async () => {
