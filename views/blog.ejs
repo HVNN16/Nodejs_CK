@@ -119,7 +119,7 @@
         <% if (blogs && blogs.length> 0) { %>
           <% blogs.forEach(function(blog) { %>
             <div class="blog-item">
-              <img src="/images/<%= blog.image || 'placeholder.jpg' %>" alt="<%= blog.title %>" class="blog-image">
+              <img src="<%= blog.image || 'placeholder.jpg' %>" alt="<%= blog.title %>" class="blog-image">
               <div class="blog-content">
                 <div class="blog-date">
                   <i class="far fa-calendar"></i>
