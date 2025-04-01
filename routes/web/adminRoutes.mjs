@@ -1,7 +1,7 @@
 // router.mjs
 import express from 'express';
 import { isAuthenticated, isAdmin } from '../../middleware/authMiddleware.mjs';
-import { adminController, upload } from '../../controllers/AdminController.mjs';
+import { adminController, upload } from '../../controllers/adminController.mjs';
 
 const router = express.Router();
 
