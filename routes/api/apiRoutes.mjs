@@ -5,7 +5,6 @@ import CartController from '../../controllers/cartController.mjs';
 import { cancelOrder, createCheckoutApi, getOrderDetailApi, getOrderHistoryApi } from '../../controllers/checkOutController.mjs';
 import ProductService from '../../services/ProductService.mjs';
 import { isAdmin, isAuthenticated } from '../../middleware/authMiddleware.mjs';
-import AdminController from '../../controllers/adminController.mjs';
 import { getBlogDetailAPI, getBlogsAPI } from '../../controllers/blogController.mjs';
 
 const router = express.Router();
@@ -53,9 +52,6 @@ router.get('/history', isAuthenticated, getOrderHistoryApi);
 router.get('/history/:id', isAuthenticated, getOrderDetailApi);
 router.post('/checkout', isAuthenticated, createCheckoutApi);
 router.post('/history/:id/cancel', isAuthenticated, cancelOrder);
-
-// Admin APIs
-router.post('/admin/users', isAuthenticated, isAdmin, AdminController.createUserApi);
 
 // Blog APIs
 router.get('/blogs', getBlogsAPI);

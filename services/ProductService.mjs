@@ -22,8 +22,15 @@ class ProductService {
   }
 
   static async searchProducts(query) {
-    if (!query) return this.getProducts();
-    return Product.find({ name: { $regex: query, $options: 'i' } }).limit(10);
+    try {
+      if (!query || typeof query !== 'string') {
+        return await Product.find(); // Trả về tất cả sản phẩm nếu không có query
+      }
+      return await Product.find({ name: { $regex: query, $options: 'i' } }); // Tìm kiếm theo tên
+    } catch (error) {
+      console.error('Error in searchProducts:', error);
+      return []; // Trả về mảng rỗng nếu có lỗi
+    }
   }
 }
 

@@ -1,120 +1,296 @@
 import UserService from '../services/UserService.mjs';
 import ProductService from '../services/ProductService.mjs';
+import BlogService from '../services/BlogService.mjs';
 import bcrypt from 'bcrypt';
+import multer from 'multer';
+import path from 'path';
+import validator from 'validator';
 
-class AdminController {
-  static async manageUsers(req, res) {
-    const q = req.query.q;
-    const users = await UserService.searchUsers(q);
-    res.render('admin_users', { title: 'User Management', users, q, user: req.user });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'public/images');
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `${file.fieldname}-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
+});
 
-  static async newUser(req, res) {
-    res.render('formnew_user', { title: 'Add New User', user: req.user });
+const fileFilter = (req, file, cb) => {
+  const fileTypes = /jpeg|jpg|png|gif/;
+  const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = fileTypes.test(file.mimetype);
+  
+  if (extname && mimetype) {
+    return cb(null, true);
   }
+  cb(new Error('Chỉ chấp nhận file ảnh (jpeg, jpg, png, gif)'));
+};
 
-  static async createUser(req, res) {
-    try {
-      const { email, name, age, password } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await UserService.createUser({ email, name, age, password: hashedPassword });
-      res.redirect('/admin/users');
-    } catch (error) {
-      res.render('formnew_user', { title: 'Add New User', error, user: req.user });
-    }
-  }
+export const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter
+});
 
-  static async editUser(req, res) {
-    const editUser = await UserService.getUserById(req.params.id);
-    if (editUser) {
-      res.render('formedit_user', { title: 'Edit User', editUser, user: req.user });
-    } else {
-      res.redirect('/admin/users');
-    }
-  }
-
-  static async updateUser(req, res) {
-    try {
-      const { email, name, age, password } = req.body;
-      const updateData = { email, name, age };
-      if (password && password.trim() !== '') {
-        updateData.password = await bcrypt.hash(password, 10);
+export class AdminController {
+  static handleErrors(fn) {
+    return async (req, res, next) => {
+      try {
+        await fn(req, res, next);
+      } catch (error) {
+        next(error);
       }
-      await UserService.updateUser(req.params.id, updateData);
-      res.redirect('/admin/users');
-    } catch (error) {
-      const editUser = await UserService.getUserById(req.params.id);
-      res.render('formedit_user', { title: 'Edit User', editUser, error, user: req.user });
-    }
+    };
   }
 
-  static async deleteUser(req, res) {
+  // User Management
+  static manageUsers = this.handleErrors(async (req, res) => {
+    const q = req.query.q || '';
+    const users = await UserService.searchUsers(q);
+    res.render('admin', { 
+      title: 'User Management', 
+      users, 
+      q, 
+      user: req.user, 
+      action: req.query.action,
+      error: null // Thêm error mặc định là null
+    });
+  });
+
+  static createUser = this.handleErrors(async (req, res) => {
+    const { email, name, age, password, role } = req.body;
+    
+    if (!email || !password) {
+      return res.render('admin', {
+        title: 'User Management',
+        action: 'newUser',
+        user: req.user,
+        error: 'Email và password là bắt buộc'
+      });
+    }
+    if (!validator.isEmail(email)) {
+      return res.render('admin', {
+        title: 'User Management',
+        action: 'newUser',
+        user: req.user,
+        error: 'Email không hợp lệ'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await UserService.createUser({ 
+      email, 
+      name, 
+      age: parseInt(age) || null, 
+      password: hashedPassword, 
+      role 
+    });
+    res.redirect('/admin/users');
+  });
+
+  static editUser = this.handleErrors(async (req, res) => {
+    const editUser = await UserService.getUserById(req.params.id);
+    if (!editUser) {
+      return res.redirect('/admin/users');
+    }
+    res.render('admin', { 
+      title: 'User Management', 
+      action: 'editUser', 
+      editUser, 
+      user: req.user,
+      error: null // Thêm error mặc định là null
+    });
+  });
+
+  static updateUser = this.handleErrors(async (req, res) => {
+    const { email, name, age, password, role } = req.body;
+    if (!email) {
+      return res.render('admin', {
+        title: 'User Management',
+        action: 'editUser',
+        editUser: { email, name, age, role },
+        user: req.user,
+        error: 'Email là bắt buộc'
+      });
+    }
+    if (!validator.isEmail(email)) {
+      return res.render('admin', {
+        title: 'User Management',
+        action: 'editUser',
+        editUser: { email, name, age, role },
+        user: req.user,
+        error: 'Email không hợp lệ'
+      });
+    }
+
+    const updateData = { 
+      email, 
+      name, 
+      age: parseInt(age) || null, 
+      role 
+    };
+    if (password && password.trim() !== '') {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+    await UserService.updateUser(req.params.id, updateData);
+    res.redirect('/admin/users');
+  });
+
+  static deleteUser = this.handleErrors(async (req, res) => {
     await UserService.deleteUser(req.params.id);
     res.redirect('/admin/users');
-  }
+  });
 
-  static async manageProducts(req, res) {
-    const q = req.query.q;
+  // Product Management
+  static manageProducts = this.handleErrors(async (req, res) => {
+    const q = req.query.q || '';
     const products = await ProductService.searchProducts(q);
-    res.render('admin_products', { title: 'Product Management', products, q, user: req.user });
-  }
+    res.render('admin', { 
+      title: 'Product Management', 
+      products, 
+      q, 
+      user: req.user, 
+      action: req.query.action,
+      error: null // Thêm error mặc định là null
+    });
+  });
 
-  static async newProduct(req, res) {
-    res.render('formnew_product', { title: 'Add New Product', user: req.user });
-  }
-
-  static async createProduct(req, res) {
-    try {
-      const { name, category, price, originalPrice, image, sale, newArrival, bestSeller } = req.body;
-      const productData = {
-        name, category, price, originalPrice, image,
-        sale: sale === 'on', newArrival: newArrival === 'on', bestSeller: bestSeller === 'on'
-      };
-      await ProductService.createProduct(productData);
-      res.redirect('/admin/products');
-    } catch (error) {
-      res.render('formnew_product', { title: 'Add New Product', error, user: req.user });
+  static createProduct = this.handleErrors(async (req, res) => {
+    const { name, category, price, originalPrice, sale, newArrival, bestSeller } = req.body;
+    if (!name || !price) {
+      return res.render('admin', {
+        title: 'Product Management',
+        action: 'newProduct',
+        user: req.user,
+        error: 'Tên sản phẩm và giá là bắt buộc'
+      });
     }
-  }
 
-  static async editProduct(req, res) {
+    const image = req.file ? `/images/${req.file.filename}` : '';
+    const productData = {
+      name, 
+      category, 
+      price: parseFloat(price), 
+      originalPrice: parseFloat(originalPrice) || null,
+      image,
+      sale: sale === 'on',
+      newArrival: newArrival === 'on',
+      bestSeller: bestSeller === 'on'
+    };
+    await ProductService.createProduct(productData);
+    res.redirect('/admin/products');
+  });
+
+  static editProduct = this.handleErrors(async (req, res) => {
     const product = await ProductService.getProductById(req.params.id);
-    if (product) {
-      res.render('formedit_product', { title: 'Edit Product', product, user: req.user });
-    } else {
-      res.redirect('/admin/products');
+    if (!product) {
+      return res.redirect('/admin/products');
     }
-  }
+    res.render('admin', { 
+      title: 'Product Management', 
+      action: 'editProduct', 
+      product, 
+      user: req.user,
+      error: null // Thêm error mặc định là null
+    });
+  });
 
-  static async updateProduct(req, res) {
-    try {
-      const { name, category, price, originalPrice, image, sale, newArrival, bestSeller } = req.body;
-      const productData = {
-        name, category, price, originalPrice, image,
-        sale: sale === 'on', newArrival: newArrival === 'on', bestSeller: bestSeller === 'on'
-      };
-      await ProductService.updateProduct(req.params.id, productData);
-      res.redirect('/admin/products');
-    } catch (error) {
-      const product = await ProductService.getProductById(req.params.id);
-      res.render('formedit_product', { title: 'Edit Product', product, error, user: req.user });
+  static updateProduct = this.handleErrors(async (req, res) => {
+    const { name, category, price, originalPrice, sale, newArrival, bestSeller } = req.body;
+    if (!name || !price) {
+      return res.render('admin', {
+        title: 'Product Management',
+        action: 'editProduct',
+        product: { name, category, price, originalPrice, sale, newArrival, bestSeller },
+        user: req.user,
+        error: 'Tên sản phẩm và giá là bắt buộc'
+      });
     }
-  }
 
-  static async deleteProduct(req, res) {
+    const image = req.file ? `/images/${req.file.filename}` : req.body.existingImage;
+    const productData = {
+      name,
+      category,
+      price: parseFloat(price),
+      originalPrice: parseFloat(originalPrice) || null,
+      image,
+      sale: sale === 'on',
+      newArrival: newArrival === 'on',
+      bestSeller: bestSeller === 'on'
+    };
+    await ProductService.updateProduct(req.params.id, productData);
+    res.redirect('/admin/products');
+  });
+
+  static deleteProduct = this.handleErrors(async (req, res) => {
     await ProductService.deleteProduct(req.params.id);
     res.redirect('/admin/products');
-  }
-  static async createUserApi(req, res) {
-    try {
-      const { email, name, age, password } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await UserService.createUser({ email, name, age, password: hashedPassword });
-      res.status(201).json({ message: 'Tạo người dùng thành công', user });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-}
+  });
 
-export default AdminController;
+  // Blog Management
+  static manageBlogs = this.handleErrors(async (req, res) => {
+    const q = req.query.q || '';
+    const blogs = await BlogService.searchBlogs(q);
+    res.render('admin', { 
+      title: 'Blog Management', 
+      blogs, 
+      q, 
+      user: req.user, 
+      action: req.query.action,
+      error: null // Thêm error mặc định là null
+    });
+  });
+
+  static createBlog = this.handleErrors(async (req, res) => {
+    const { title, description, content } = req.body;
+    if (!title || !content) {
+      return res.render('admin', {
+        title: 'Blog Management',
+        action: 'newBlog',
+        user: req.user,
+        error: 'Tiêu đề và nội dung là bắt buộc'
+      });
+    }
+
+    const image = req.file ? `/images/${req.file.filename}` : '';
+    await BlogService.createBlog({ title, description, image, content });
+    res.redirect('/admin/blogs');
+  });
+
+  static editBlog = this.handleErrors(async (req, res) => {
+    const blog = await BlogService.getBlogById(req.params.id);
+    if (!blog) {
+      return res.redirect('/admin/blogs');
+    }
+    res.render('admin', { 
+      title: 'Blog Management', 
+      action: 'editBlog', 
+      blog, 
+      user: req.user,
+      error: null // Thêm error mặc định là null
+    });
+  });
+
+  static updateBlog = this.handleErrors(async (req, res) => {
+    const { title, description, content } = req.body;
+    if (!title || !content) {
+      return res.render('admin', {
+        title: 'Blog Management',
+        action: 'editBlog',
+        blog: { title, description, content },
+        user: req.user,
+        error: 'Tiêu đề và nội dung là bắt buộc'
+      });
+    }
+
+    const image = req.file ? `/images/${req.file.filename}` : req.body.existingImage;
+    await BlogService.updateBlog(req.params.id, { title, description, image, content });
+    res.redirect('/admin/blogs');
+  });
+
+  static deleteBlog = this.handleErrors(async (req, res) => {
+    await BlogService.deleteBlog(req.params.id);
+    res.redirect('/admin/blogs');
+  });
+}
