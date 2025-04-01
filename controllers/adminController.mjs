@@ -33,7 +33,7 @@ export const upload = multer({
   fileFilter
 });
 
-export class AdminController {
+export class adminController {
   static handleErrors(fn) {
     return async (req, res, next) => {
       try {
