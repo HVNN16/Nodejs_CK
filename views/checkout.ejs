@@ -231,21 +231,29 @@
         }
 
         $.ajax({
-          url: '/place-order',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify(orderData),
-          success: function(response) {
-            if (response.message === 'Order placed successfully!') {
-              $('#orderModal').modal('show');
-            } else {
-              alert(response.message);
-            }
-          },
-          error: function(xhr) {
-            alert('Đã xảy ra lỗi khi đặt đơn hàng: ' + (xhr.responseJSON?.message || 'Unknown error'));
-          }
-        });
+  url: '/place-order',
+  method: 'POST',
+  contentType: 'application/json',
+  data: JSON.stringify(orderData),
+  success: function(response) {
+    if (response.message === 'Order placed successfully!') {
+      if (orderData.payment === 'internet-banking') {
+        // Chuyển sang trang thanh toán Internet Banking
+        window.location.href = `/payment/internet-banking/${response.order._id}`;
+        return;
+      }
+
+      // Nếu không phải Internet Banking, vẫn hiển thị modal
+      $('#orderModal').modal('show');
+    } else {
+      alert(response.message);
+    }
+  },
+  error: function(xhr) {
+    alert('Đã xảy ra lỗi khi đặt đơn hàng: ' + (xhr.responseJSON?.message || 'Unknown error'));
+  }
+});
+
       });
     });
   </script>

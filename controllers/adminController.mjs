@@ -1,6 +1,7 @@
 import UserService from '../services/UserService.mjs';
 import ProductService from '../services/ProductService.mjs';
 import BlogService from '../services/BlogService.mjs';
+import CheckoutService from '../services/CheckoutService.mjs'; // Thêm CheckoutService
 import bcrypt from 'bcrypt';
 import multer from 'multer';
 import path from 'path';
@@ -292,5 +293,53 @@ export class adminController {
   static deleteBlog = this.handleErrors(async (req, res) => {
     await BlogService.deleteBlog(req.params.id);
     res.redirect('/admin/blogs');
+  });
+
+  // =================== ORDERS ===================
+  static manageOrders = this.handleErrors(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = 10; // số order mỗi trang
+  const skip = (page - 1) * limit;
+
+  const q = req.query.q || '';
+  const status = req.query.status || '';
+
+  // Lấy tổng số đơn hàng theo filter
+  const totalOrders = await CheckoutService.countOrders(q, status);
+
+  // Lấy danh sách đơn hàng phân trang
+  const orders = await CheckoutService.getOrdersPaginated(q, status, skip, limit);
+
+  const totalPages = Math.ceil(totalOrders / limit);
+
+  res.render('admin', { 
+    title: 'Order Management', 
+    orders, 
+    q, 
+    status, 
+    user: req.user, 
+    action: req.query.action, 
+    currentPage: page,
+    totalPages,
+    error: null 
+  });
+});
+
+  static viewOrderDetail = this.handleErrors(async (req, res) => {
+    const order = await CheckoutService.getOrderDetailAdmin(req.params.id); 
+    if (!order) return res.redirect('/admin/orders');
+    res.render('admin', { 
+      title: 'Order Detail', 
+      order, 
+      user: req.user, 
+      action: 'viewOrder', 
+      error: null 
+    });
+  });
+
+  static updateOrderStatus = this.handleErrors(async (req, res) => {
+    const { status } = req.body;
+    await CheckoutService.updateOrderStatus(req.params.id, status); 
+    res.redirect('/admin/orders');
   });
 }
